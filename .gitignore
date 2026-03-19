@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.example
+chroma_db/
+eventos_extraidos.json
+*.egg-info/
+dist/
+build/
+.streamlit/secrets.toml
