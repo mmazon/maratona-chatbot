@@ -51,7 +51,7 @@ def init_assistente(buscador: Buscador) -> Assistente:
 
 # ── Page Config ──
 st.set_page_config(
-    page_title="Maratona Cultural Floripa 2025",
+    page_title="Maratona Cultural Floripa 2026",
     page_icon="🎭",
     layout="centered",
 )

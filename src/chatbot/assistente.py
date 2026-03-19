@@ -8,7 +8,7 @@ from src.models.evento import Evento
 from src.search.buscador import Buscador
 from src.search.query_parser import parsear_query, QueryParseada
 
-SYSTEM_PROMPT = """Você é o assistente oficial da Maratona Cultural de Florianópolis 2025.
+SYSTEM_PROMPT = """Você é o assistente oficial da Maratona Cultural de Florianópolis 2026.
 
 Seu papel:
 - Ajudar o público a encontrar eventos na programação
