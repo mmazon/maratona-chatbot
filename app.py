@@ -240,29 +240,6 @@ with st.sidebar:
 """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.markdown("### 📅 Programação")
-    st.markdown("""
-    - **Sex 20/03** — Abertura
-    - **Sáb 21/03** — Joelma
-    - **Dom 22/03** — Marisa Monte
-    - **Seg 23/03** — Partimpim (infantil)
-    """)
-
-    st.markdown("---")
-    st.markdown("### 🗺️ Bairros")
-    st.markdown(
-        "Centro · Agronômica · Lagoa · Campeche · "
-        "Trindade · Coqueiros · Santo Antônio"
-    )
-
-    st.markdown("---")
-    st.markdown("### 🏷️ Categorias")
-    st.markdown(
-        "Shows · Teatro · Exposições · Cinema · "
-        "Oficinas · Feiras · Circo · Infantil"
-    )
-
-    st.markdown("---")
     if st.button("🗑️ Limpar conversa", use_container_width=True):
         st.session_state.messages = []
         st.session_state.pop("assistente", None)
