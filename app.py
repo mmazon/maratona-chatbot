@@ -22,21 +22,15 @@ EVENTOS_JSON = "./eventos_extraidos.json"
 
 @st.cache_resource
 def carregar_sistema():
-    """Carrega ou cria o índice de eventos (cached)."""
-    if Path(EVENTOS_JSON).exists():
-        with open(EVENTOS_JSON, "r", encoding="utf-8") as f:
-            dados = json.load(f)
-        eventos = [Evento(**d) for d in dados]
-        try:
-            collection = carregar_indice(CHROMA_DIR)
-        except Exception:
-            collection = criar_indice(eventos, CHROMA_DIR)
-    else:
-        texto = extrair_texto_pdf(PDF_PATH)
-        eventos = parsear_programacao(texto)
-        with open(EVENTOS_JSON, "w", encoding="utf-8") as f:
-            json.dump([e.model_dump() for e in eventos], f, ensure_ascii=False, indent=2)
-        collection = criar_indice(eventos, CHROMA_DIR)
+    """Carrega ou cria o índice de eventos (cached).
+
+    Sempre re-parseia o PDF para garantir que correções no parser sejam aplicadas.
+    """
+    texto = extrair_texto_pdf(PDF_PATH)
+    eventos = parsear_programacao(texto)
+    with open(EVENTOS_JSON, "w", encoding="utf-8") as f:
+        json.dump([e.model_dump() for e in eventos], f, ensure_ascii=False, indent=2)
+    collection = criar_indice(eventos, CHROMA_DIR)
 
     buscador = Buscador(collection, eventos)
     return buscador
