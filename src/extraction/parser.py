@@ -61,6 +61,14 @@ RE_SECAO = re.compile(
     re.IGNORECASE,
 )
 
+# Cidade de origem do artista: "Florianópolis/SC", "Palhoça/SC", "Rio de Janeiro/RJ"
+RE_ORIGEM_ARTISTA = re.compile(
+    r"^[\w\s\.]+/\s*("
+    r"AC|AL|AP|AM|BA|CE|DF|ES|GO|MA|MT|MS|MG|PA|PB|PR|PE|PI|"
+    r"RJ|RN|RS|RO|RR|SC|SP|SE|TO"
+    r")$"
+)
+
 # Endereço — linhas que contêm referências de endereço comuns
 RE_ENDERECO = re.compile(
     r"(Rua|Av\.|Avenida|Rod\.|Rodovia|Tv\.|Travessa|Praça|"
@@ -457,16 +465,22 @@ def parsear_programacao(texto: str) -> list[Evento]:
                 continue
 
         # ── Endereço ──
-        if RE_ENDERECO.search(linha) and not RE_HORARIO.match(linha):
+        # Não tratar como endereço se a linha é um nome de local
+        # (ex: "SAMBA DA TRAVESSA" contém "Travessa" mas é nome de local)
+        if RE_ENDERECO.search(linha) and not RE_HORARIO.match(linha) and not _linha_e_local(linha):
             _flush_evento()
             # Se há linhas não classificadas antes do endereço,
             # provavelmente são o nome do novo local
             # Ex: "9 MOSTRA TRAÇO DE BOLSO\nA\nPraça Bento Silvério..."
             if linhas_nao_classificadas:
-                candidato_local = " ".join(linhas_nao_classificadas)
-                # Ignora se é aviso/disclaimer, não nome de local
-                if "PROGRAMAÇÃO SUJEITA" not in candidato_local.upper():
-                    nome_local_atual = candidato_local
+                # Filtra linhas que são origem de artista (ex: "Palhoça/SC")
+                candidatas = [l for l in linhas_nao_classificadas
+                              if not RE_ORIGEM_ARTISTA.match(l)]
+                if candidatas:
+                    candidato_local = " ".join(candidatas)
+                    # Ignora se é aviso/disclaimer, não nome de local
+                    if "PROGRAMAÇÃO SUJEITA" not in candidato_local.upper():
+                        nome_local_atual = candidato_local
                 linhas_nao_classificadas = []
             endereco_atual = linha
             bairro_novo = _extrair_bairro(linha)
@@ -526,6 +540,7 @@ def parsear_programacao(texto: str) -> list[Evento]:
                 and "," not in linha
                 and linha[0].isupper()
                 and proporcao_upper < 0.7  # bairros não são TUDO MAIÚSCULA
+                and not RE_ORIGEM_ARTISTA.match(linha)  # Ignora "Palhoça/SC" etc.
             ):
                 # Limpa classificação se estiver colada ao bairro
                 bairro_limpo = re.sub(
