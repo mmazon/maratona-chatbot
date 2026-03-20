@@ -300,10 +300,10 @@ def parsear_query(texto: str) -> QueryParseada:
         m = int(match_antes.group(2)) if match_antes.group(2) else 0
         filtros["horario_max"] = h * 60 + m
 
-    # ── Busca por tipo de local (bar, restaurante) ──
-    # "bar" e "bares" buscam por nome do local que contenha "BAR"
-    if re.search(r"\b(bar|bares|bar participante|bares participantes)\b", texto_lower):
-        filtros["busca_local_nome"] = "BAR"
+    # ── Busca por tipo de local (bar, restaurante, boteco) ──
+    # Bares/botecos participantes têm nomes variados — busca em todos
+    if re.search(r"\b(bar|bares|bar participante|bares participantes|boteco|botecos)\b", texto_lower):
+        filtros["busca_local_nome"] = ["BAR", "BOTECO", "GASTROBAR", "CACHAÇARIA", "SAPATECO", "CASA ODARA", "RUFUS", "SAUDADES", "HAÔMA", "BUGIO"]
 
     # ── Gera texto de busca limpo ──
     # Remove termos de filtro do texto para a busca semântica ser mais efetiva

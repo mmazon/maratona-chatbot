@@ -204,11 +204,15 @@ class Buscador:
         filtros: dict,
         n_resultados: int,
     ) -> list[tuple[Evento, float]]:
-        """Busca eventos em locais cujo nome contenha um termo (ex: BAR, BOTECO).
+        """Busca eventos em locais cujo nome contenha termos (ex: BAR, BOTECO).
 
         Retorna todos os eventos desses locais, filtrados por data/horário.
         """
-        termo = filtros["busca_local_nome"].upper()
+        termos = filtros["busca_local_nome"]
+        if isinstance(termos, str):
+            termos = [termos]
+        termos = [t.upper() for t in termos]
+
         # Filtros reduzidos: só data/horário/bairro
         filtros_local = {
             k: v for k, v in filtros.items()
@@ -217,14 +221,16 @@ class Buscador:
         resultados: list[tuple[Evento, float]] = []
 
         for evento in self._eventos_por_id.values():
-            if termo in evento.nome_local.upper():
-                if filtros_local and not self._passa_filtros_python(evento, filtros_local):
+            nome_upper = evento.nome_local.upper()
+            if not any(t in nome_upper for t in termos):
+                continue
+            if filtros_local and not self._passa_filtros_python(evento, filtros_local):
+                continue
+            # Filtro bairro manual
+            if filtros_local.get("bairro"):
+                if filtros_local["bairro"].lower() not in evento.bairro.lower():
                     continue
-                # Filtro bairro manual (não está no _passa_filtros_python)
-                if filtros_local.get("bairro"):
-                    if filtros_local["bairro"].lower() not in evento.bairro.lower():
-                        continue
-                resultados.append((evento, 1.0))
+            resultados.append((evento, 1.0))
 
         # Ordena por data e horário
         resultados.sort(
