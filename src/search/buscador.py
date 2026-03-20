@@ -44,6 +44,10 @@ class Buscador:
         if filtros.get("local"):
             return self._buscar_por_local(filtros, n_resultados)
 
+        # Se busca por tipo de local (ex: "bar" → locais com BAR no nome)
+        if filtros.get("busca_local_nome"):
+            return self._buscar_por_tipo_local(filtros, n_resultados)
+
         # Monta filtros ChromaDB (where clause)
         where = self._montar_where(filtros)
 
@@ -188,6 +192,39 @@ class Buscador:
                 else:
                     score = 0.9
                 resultados.append((evento, score))
+
+        # Ordena por data e horário
+        resultados.sort(
+            key=lambda x: (x[0].data, x[0].horario_inicio_minutos or 0)
+        )
+        return resultados[:n_resultados]
+
+    def _buscar_por_tipo_local(
+        self,
+        filtros: dict,
+        n_resultados: int,
+    ) -> list[tuple[Evento, float]]:
+        """Busca eventos em locais cujo nome contenha um termo (ex: BAR, BOTECO).
+
+        Retorna todos os eventos desses locais, filtrados por data/horário.
+        """
+        termo = filtros["busca_local_nome"].upper()
+        # Filtros reduzidos: só data/horário/bairro
+        filtros_local = {
+            k: v for k, v in filtros.items()
+            if k in ("data", "periodo", "horario_min", "horario_max", "bairro")
+        }
+        resultados: list[tuple[Evento, float]] = []
+
+        for evento in self._eventos_por_id.values():
+            if termo in evento.nome_local.upper():
+                if filtros_local and not self._passa_filtros_python(evento, filtros_local):
+                    continue
+                # Filtro bairro manual (não está no _passa_filtros_python)
+                if filtros_local.get("bairro"):
+                    if filtros_local["bairro"].lower() not in evento.bairro.lower():
+                        continue
+                resultados.append((evento, 1.0))
 
         # Ordena por data e horário
         resultados.sort(

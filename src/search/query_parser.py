@@ -74,8 +74,6 @@ MAPA_CATEGORIAS = {
     "kids": "infantil",
     "literatura": "literatura",
     "livro": "literatura",
-    "bar": "gastronomia",
-    "bares": "gastronomia",
     "restaurante": "gastronomia",
     "gastronomia": "gastronomia",
 }
@@ -301,6 +299,11 @@ def parsear_query(texto: str) -> QueryParseada:
         h = int(match_antes.group(1))
         m = int(match_antes.group(2)) if match_antes.group(2) else 0
         filtros["horario_max"] = h * 60 + m
+
+    # ── Busca por tipo de local (bar, restaurante) ──
+    # "bar" e "bares" buscam por nome do local que contenha "BAR"
+    if re.search(r"\b(bar|bares|bar participante|bares participantes)\b", texto_lower):
+        filtros["busca_local_nome"] = "BAR"
 
     # ── Gera texto de busca limpo ──
     # Remove termos de filtro do texto para a busca semântica ser mais efetiva
